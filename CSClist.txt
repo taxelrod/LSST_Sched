@@ -28,10 +28,10 @@ Dome,
 ECS,
 EFD_SciencePlatform,
 EMCS,
-Guider,
+Guider,0,7,50,40
 headerService,
 hexapod,
-IOTA,
+IOTA,0,7,45,60
 LaserTracker,
 LOVE,
 m1m3,70
@@ -42,8 +42,8 @@ PointingComponent,80
 Rotator,
 scheduler,60,
 TCS,
-tcsOFC,30,
-tcsWEP,40,
+tcsOFC,30,7,120,90
+tcsWEP,40,7,150,100
 TunableLaser,
 WEP_Server,
 WhiteLightSource,
