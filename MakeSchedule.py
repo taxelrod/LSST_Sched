@@ -12,6 +12,7 @@ import pandas  as pd
 import numpy as np
 import plotly
 import plotly.figure_factory as ff
+import matplotlib.pyplot as plt
 
 class DevelState(Enum):
     NotStarted = 0
@@ -21,7 +22,7 @@ class DevelState(Enum):
 
 class Milestone:
     def readIn(self,fileName):
-        self.df = pd.read_csv(fileName, sep = ',', dtype = str)
+        self.df = pd.read_csv(fileName, sep = ',', comment = '#', dtype = str)
         self.df['Completion Date(dt)']=dt.date(2030,1,1)
         for i in range(len(self.df)):
             row = self.df.iloc[i]
@@ -54,14 +55,31 @@ class CSC:
         self.cost[DevelState.Verified.value] = costVerified
         self.date[DevelState.Verified.value] = dt.date(2021,1,1)
         
+"""
+Per FE:
 
+7.5 story points / wk / developer including overhead
+
+Small task:  2 weeks, 15 pts
+Med       :  6 weeks, 45 pts
+Large     :  3 months, 90 pts
+
+Her guess at hexapod CSC:  Med
+
+Derating factor DM productivity/TSS:  2?
+
+"""
 class CSCdict:
-    
+
+    defaultCostSkeleton = 7
+    defaultCostAlgorithm = 45
+    defaultCostVerified = 45
+
     def __init__(self):
         self.dict = {}
         
     def readIn(self,fileName):
-        self.df = pd.read_csv(fileName, sep=',')
+        self.df = pd.read_csv(fileName, sep=',', comment='#')
 
         for i in range(len(self.df)):
             row = self.df.iloc[i]
@@ -74,15 +92,15 @@ class CSCdict:
                 percentComplete = row['percentComplete']
 
             if np.isnan(row['costSkeleton']):
-                costSkeleton = 0
+                costSkeleton = self.defaultCostSkeleton
             else:
                 costSkeleton = row['costSkeleton']
             if np.isnan(row['costAlgorithm']):
-                costAlgorithm = 0
+                costAlgorithm = self.defaultCostAlgorithm
             else:
                 costAlgorithm = row['costAlgorithm']
             if np.isnan(row['costVerified']):
-                costVerified = 0
+                costVerified = self.defaultCostVerified
             else:
                 costVerified = row['costVerified']
             # dates = 4:6
@@ -122,15 +140,34 @@ class CSCdict:
 
         return self.df
 
-    def makeGanttOrig(self, cutStart=None, cutEnd=None):
-        self.ganttDf = self.df.sort_values('dateSkeleton').rename(index=str,columns={"CSCname":"Task", "dateSkeleton":"Start", "dateVerified":"Finish"})
+    def makeCostProfile(self):
 
-        colors = {'red': 'rgb(220, 0, 0)',
-          'yellow': (1, 0.9, 0.16),
-          'green': 'rgb(0, 255, 100)'}
+        nCostPoints = 3*len(self.dict)
+        times = np.zeros((nCostPoints), dtype=object)
+        costs = np.zeros((nCostPoints), dtype=object)
+        
+        i = 0
+        for k in iter(self.dict):
+            csc = self.dict[k]
+            times[i] = csc.date[DevelState.Skeleton.value]
+            times[i+1] = csc.date[DevelState.Algorithm.value]
+            times[i+2] = csc.date[DevelState.Verified.value]
+            costs[i] = csc.cost[DevelState.Skeleton.value]
+            costs[i+1] = csc.cost[DevelState.Algorithm.value]
+            costs[i+2] = csc.cost[DevelState.Verified.value]
+            i += 3
 
-        fig = ff.create_gantt(self.ganttDf,index_col='color',height=1200,width=1800,colors=colors,showgrid_x=True, showgrid_y=True)
-        plotly.offline.plot(fig, filename='CSC_gantt.html')
+        ix = np.argsort(times)
+        timesSorted = times[ix]
+        costsSorted = costs[ix]
+
+        costsCumulative = np.zeros_like(costsSorted)
+        costsCumulative[0] = costsSorted[0]
+        for i in range(1, len(costsCumulative)):
+            costsCumulative[i] = costsCumulative[i-1] + costsSorted[i]
+
+        return timesSorted, costsCumulative
+        
         
     def makeGantt(self, cutStart=None, cutEnd=None):
 
