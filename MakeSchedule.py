@@ -121,6 +121,8 @@ class CSCdict:
         wbsSkeleton = np.zeros((nrows), dtype=object)
         wbsAlgorithm = np.zeros((nrows), dtype=object)
         wbsVerified = np.zeros((nrows), dtype=object)
+        costTot = np.zeros((nrows))
+        percentComplete = np.zeros((nrows))
 
         i = 0
         for k in iter(self.dict):
@@ -139,10 +141,14 @@ class CSCdict:
             wbsSkeleton[i] = csc.wbs[DevelState.Skeleton.value]
             wbsAlgorithm[i] = csc.wbs[DevelState.Algorithm.value]
             wbsVerified[i] = csc.wbs[DevelState.Verified.value]
+            costTot[i] = csc.cost[DevelState.Skeleton.value] + csc.cost[DevelState.Algorithm.value] + csc.cost[DevelState.Verified.value]
+            percentComplete[i] = csc.complete
             i += 1
         d = OrderedDict()
         d['CSCname'] = names
         d['color'] = color
+        d['story points'] = costTot
+        d['% complete'] = percentComplete
         d['dateSkeleton'] = dateSkeleton
         d['dateAlgorithm'] =  dateAlgorithm
         d['dateVerified'] = dateVerified
@@ -153,6 +159,12 @@ class CSCdict:
 
         return self.df
 
+    def writeCSV(self, fileName):
+        f = open(fileName, 'w')
+        colsToWrite=['CSCname', 'story points', '% complete', 'dateAlgorithm', 'dateVerified', 'wbsAlgorithm', 'wbsVerified']
+        f.write(self.df.sort_values('dateAlgorithm').to_csv(columns=colsToWrite))
+        f.close()
+        
     def makeCostProfile(self):
 
         nCostPoints = 3*len(self.dict)
