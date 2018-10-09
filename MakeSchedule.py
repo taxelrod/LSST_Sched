@@ -14,6 +14,8 @@ import plotly
 import plotly.figure_factory as ff
 import matplotlib.pyplot as plt
 
+debug = False
+
 class DevelState(Enum):
     NotStarted = 0
     Skeleton = 1
@@ -43,6 +45,7 @@ class CSC:
         self.name = name
         self.cost = np.zeros(4)
         self.date = np.zeros(4, dtype=dt.date)
+        self.wbs = np.zeros(4, dtype=object)
 
         self.complete = percentComplete
         
@@ -115,6 +118,10 @@ class CSCdict:
         dateSkeleton = np.zeros((nrows), dtype=dt.date)
         dateAlgorithm = np.zeros((nrows), dtype=dt.date)
         dateVerified = np.zeros((nrows), dtype=dt.date)
+        wbsSkeleton = np.zeros((nrows), dtype=object)
+        wbsAlgorithm = np.zeros((nrows), dtype=object)
+        wbsVerified = np.zeros((nrows), dtype=object)
+
         i = 0
         for k in iter(self.dict):
             csc = self.dict[k]
@@ -129,6 +136,9 @@ class CSCdict:
             dateSkeleton[i] = csc.date[DevelState.Skeleton.value]
             dateAlgorithm[i] = csc.date[DevelState.Algorithm.value]
             dateVerified[i] = csc.date[DevelState.Verified.value]
+            wbsSkeleton[i] = csc.wbs[DevelState.Skeleton.value]
+            wbsAlgorithm[i] = csc.wbs[DevelState.Algorithm.value]
+            wbsVerified[i] = csc.wbs[DevelState.Verified.value]
             i += 1
         d = OrderedDict()
         d['CSCname'] = names
@@ -136,6 +146,9 @@ class CSCdict:
         d['dateSkeleton'] = dateSkeleton
         d['dateAlgorithm'] =  dateAlgorithm
         d['dateVerified'] = dateVerified
+        d['wbsSkeleton'] = wbsSkeleton
+        d['wbsAlgorithm'] =  wbsAlgorithm
+        d['wbsVerified'] = wbsVerified
         self.df = pd.DataFrame(d)
 
         return self.df
@@ -155,6 +168,22 @@ class CSCdict:
             costs[i] = csc.cost[DevelState.Skeleton.value]
             costs[i+1] = csc.cost[DevelState.Algorithm.value]
             costs[i+2] = csc.cost[DevelState.Verified.value]
+
+            if csc.complete > 0:
+                if debug:
+                    print(csc.complete, costs[i], costs[i+1], costs[i+2], end=' ')
+                fracCompl = csc.complete/100.0
+                costTot = costs[i] + costs[i+1] + costs[i+2]
+                costDone = fracCompl*costTot
+                costSkel = costs[i]
+                costAlg = costs[i+1]
+                costVer = costs[i+2]
+                costs[i] = max(0, costSkel-costDone) 
+                costs[i+1] = max(0, costSkel+costAlg-costs[i]-costDone) 
+                costs[i+2] = max(0, costSkel+costAlg+costVer-costs[i+1]-costDone)
+                if debug:
+                    print(fracCompl, costDone, costs[i], costs[i+1], costs[i+2], costTot-(costDone+costs[i]+costs[i+1]+costs[i+2]))
+            
             i += 3
 
         ix = np.argsort(times)
@@ -223,8 +252,10 @@ def calcCSCReq(milestones,CSCdict):
                     csc = CSCdict.dict[cscName]
                     cscDate = csc.date[cscState.value] # this is a datetime.date
                     msDate = row['Completion Date(dt)'] # this is a datetime.date
+                    msWBS = row['WBS Code']
                     if msDate < cscDate:
                         csc.date[cscState.value] = msDate
+                        csc.wbs[cscState.value] = msWBS
                     for i in np.arange(len(csc.date)-2, -1, -1):
                         csc.date[i] = min(csc.date[i], csc.date[i+1])
                     
