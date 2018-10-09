@@ -7,7 +7,7 @@ from importlib import reload
 miles=ms.Milestone()
 miles.readIn('MasterTasks.csv')
 cscd=ms.CSCdict()
-cscd.readIn('../Arch/CSClist.txt')
+cscd.readIn('./CSClist.txt')
 ms.calcCSCReq(miles, cscd)
 cscd.makeDF()
 cscd.makeGantt()
