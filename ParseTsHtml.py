@@ -1,3 +1,7 @@
+"""
+Parse the HTML file for each CSC that defines its Commands
+"""
+
 import os
 import re
 from html.parser import HTMLParser
@@ -27,7 +31,6 @@ class TsHTMLParser(HTMLParser):
 
 
 def UnpackCmd(cmdString, *args):
-#    print('args: ', args)
     cmdDict = args[0][0]  # I don't know why this second level of indexing is required
     cmdArgs = list();
     cmdPieces = cmdString.split(',')
@@ -36,15 +39,12 @@ def UnpackCmd(cmdString, *args):
         piece = piece.replace('\\n','')
         piece = piece.replace('\\','')
         piece = piece.strip()
-#        print(piece)
         if i==0:
             cmdName = piece
         else:
             if len(piece) > 0:
                 cmdArgs.append(piece)
-#    print(type(cmdDict),cmdName, cmdArgs)
     cmdDict[cmdName] = cmdArgs
-#    print(cmdPieces)
 
 def AssessCSC(cscDir):
     f = open(cscDir, 'r')
@@ -55,7 +55,21 @@ def AssessCSC(cscDir):
     parser = TsHTMLParser(UnpackCmd, cmdDict)
     parser.feed(htmlData)
 
-    print(cscDir, len(cmdDict))
+    try:
+        cmdDict.pop('Command AliasParameter') # remove useless header line
+    except KeyError:
+        pass
+    
+    minArgs = 999
+    maxArgs = 0
+    
+    for c in cmdDict:
+        cmdArgs = cmdDict[c]
+        lenArgs = len(cmdArgs)
+        minArgs = min(minArgs, lenArgs)
+        maxArgs = max(maxArgs, lenArgs)
+        
+    print(cscDir, len(cmdDict), minArgs, maxArgs)
 
 def AssessCSCset(rootDir):
 
