@@ -3,18 +3,18 @@ AOCLC,
 allSky,
 archiver,0,0,0,45
 atAOS,
-atArchiver,700,0,0,45
+atArchiver,0,0,0,45
 atBuilding,
 atCalibration_Electrometer,70
 atCamera,90,
 atDome,
 atFiberSpectrometer,70
-atHeaderService,700,0,0,45
+atHeaderService,0,0,0,45
 atM2_Hexapod,0,0,0,45
 atMCS,
 atMonochromator,
 atPneumatics,
-atPointingComponent,80
+atPointingComponent,0,0,0,45
 atScheduler,50
 atSpectrograph,50,
 atTCS,
@@ -54,3 +54,5 @@ CalibrationScreen,
 CBP,
 GPS,
 DIMM,
+efdTransformationService,0,0,0,40
+ocsDrivenBatch,0,0,0,65

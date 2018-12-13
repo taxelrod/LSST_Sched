@@ -63,13 +63,16 @@ def AssessCSC(cscDir):
     minArgs = 999
     maxArgs = 0
     
+    print('Summary for: ', cscDir)
+
     for c in cmdDict:
         cmdArgs = cmdDict[c]
         lenArgs = len(cmdArgs)
         minArgs = min(minArgs, lenArgs)
         maxArgs = max(maxArgs, lenArgs)
+        print('\t',c, cmdArgs)
         
-    print(cscDir, len(cmdDict), minArgs, maxArgs)
+#    print('Summary for: ', cscDir, len(cmdDict), minArgs, maxArgs)
 
 def AssessCSCset(rootDir):
 

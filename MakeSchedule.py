@@ -161,7 +161,7 @@ class CSCdict:
 
     def writeCSV(self, fileName):
         f = open(fileName, 'w')
-        colsToWrite=['CSCname', 'story points', '% complete', 'dateAlgorithm', 'dateVerified', 'wbsAlgorithm', 'wbsVerified']
+        colsToWrite=['CSCname', 'story points', '% complete', 'dateSkeleton', 'dateAlgorithm', 'dateVerified', 'wbsSkeleton', 'wbsAlgorithm', 'wbsVerified']
         f.write(self.df.sort_values('dateAlgorithm').to_csv(columns=colsToWrite))
         f.close()
         
